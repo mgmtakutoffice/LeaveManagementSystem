@@ -13,18 +13,58 @@ from collections import defaultdict, OrderedDict
 from datetime import datetime, timedelta
 from flask import render_template
 
+import os, json   # make sure json is imported
+import gspread
+from google.oauth2.service_account import Credentials
+from flask import Flask
+
 app = Flask(__name__)
-app.secret_key = "your-secret-key"
+app.secret_key = os.getenv("SECRET_KEY", "your-secret-key")
 
-login_manager = LoginManager()
-login_manager.init_app(app)
-login_manager.login_view = "login"
+# Google Sheets scopes
+SCOPES = [
+    "https://www.googleapis.com/auth/spreadsheets",
+    "https://www.googleapis.com/auth/drive",  # keep if you open by name or need Drive ops
+]
 
-SCOPE = ["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive"]
-#creds_path = os.environ.get("GOOGLE_CREDS_PATH", "credentials.json")
-creds_path=json.loads(os.environ["GOOGLE_CREDENTIALS_JSON"])
-creds = Credentials.from_json_keyfile_name(creds_path, SCOPE)
-client = gspread.authorize(creds)
+# Env-driven config (set these in Render)
+SHEET_ID = os.environ.get("SHEET_ID")                     # spreadsheet ID (not name)
+USERS_SHEET_NAME = os.environ.get("USERS_SHEET_NAME", "Users")
+FORM_WS_NAME = os.environ.get("FORM_WS_NAME", "Form Responses 1")
+
+def get_gspread_client():
+    """
+    Authorize from env var (GOOGLE_CREDENTIALS_JSON) or secret file (GOOGLE_CREDENTIALS_FILE).
+    """
+    if os.getenv("GOOGLE_CREDENTIALS_JSON"):
+        info = json.loads(os.environ["GOOGLE_CREDENTIALS_JSON"])
+        creds = Credentials.from_service_account_info(info, scopes=SCOPES)
+    else:
+        key_path = os.getenv("GOOGLE_CREDENTIALS_FILE", "/etc/secrets/service_account.json")
+        creds = Credentials.from_service_account_file(key_path, scopes=SCOPES)
+    return gspread.authorize(creds)
+
+def get_spreadsheet():
+    """
+    Open the spreadsheet by ID. Avoid opening by name in production.
+    """
+    if not SHEET_ID:
+        raise RuntimeError("SHEET_ID env var not set")
+    gc = get_gspread_client()
+    return gc.open_by_key(SHEET_ID)
+
+def get_users_sheet():
+    sh = get_spreadsheet()
+    return sh.worksheet(USERS_SHEET_NAME)
+
+def get_sheet():
+    sh = get_spreadsheet()
+    return sh.worksheet(FORM_WS_NAME)
+
+
+
+
+
 SHEET_NAME = client.open("Leave Application (Responses)")
 
 # Columns in Form Responses 1 (keep the exact header text as in the sheet)
@@ -54,11 +94,11 @@ FROM_NAME  = "Leave Management System"
 NOTIFY_EMAILS = [e.strip() for e in os.getenv("NOTIFY_EMAILS", "").split(",") if e.strip()]
 
 
-def get_users_sheet():
-    client = gspread.authorize(
-        ServiceAccountCredentials.from_json_keyfile_name(CREDS_FILE, SCOPE)
-    )
-    return client.open(SHEET_NAME).worksheet("Users")
+#def get_users_sheet():
+#    client = gspread.authorize(
+#        ServiceAccountCredentials.from_json_keyfile_name(CREDS_FILE, SCOPE)
+#    )
+#    return client.open(SHEET_NAME).worksheet("Users")
 
 def get_user_row_by_email(email):
     ws = get_users_sheet()
@@ -544,6 +584,7 @@ def admin_dashboard():
 #    app.run(debug=True)
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)
+
 
 
 
