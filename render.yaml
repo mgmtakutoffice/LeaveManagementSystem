@@ -4,8 +4,9 @@ services:
     env: python
     runtime: python
     buildCommand: pip install -r requirements.txt
-    startCommand: python3 app.py
+    startCommand: "waitress-serve --listen=0.0.0.0:$PORT app:app"
     plan: free
     envVars:
       - key: GOOGLE_CREDS_PATH
+
         value: /etc/secrets/credentials.json
