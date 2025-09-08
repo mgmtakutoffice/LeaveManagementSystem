@@ -22,7 +22,7 @@ login_manager.login_view = "login"
 
 SCOPE = ["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive"]
 #creds_path = os.environ.get("GOOGLE_CREDS_PATH", "credentials.json")
-creds_path=json.loads(os.environ["GOOGLE_CREDS_PATH"])
+creds_path=json.loads(os.environ["GOOGLE_CREDENTIALS_JSON"])
 creds = Credentials.from_json_keyfile_name(creds_path, SCOPE)
 client = gspread.authorize(creds)
 SHEET_NAME = client.open("Leave Application (Responses)")
@@ -544,6 +544,7 @@ def admin_dashboard():
 #    app.run(debug=True)
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)
+
 
 
 
