@@ -2,7 +2,8 @@ import datetime
 from flask import Flask, render_template, request, redirect, url_for, flash
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
 import gspread
-from oauth2client.service_account import ServiceAccountCredentials
+#from oauth2client.service_account import ServiceAccountCredentials
+from google.oauth2.service_account import Credentials
 from calendar import month_name
 import os
 import smtplib
@@ -19,9 +20,10 @@ login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = "login"
 
-SCOPE = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-creds_path = os.environ.get("GOOGLE_CREDS_PATH", "credentials.json")
-creds = ServiceAccountCredentials.from_json_keyfile_name(creds_path, SCOPE)
+SCOPE = ["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive"]
+#creds_path = os.environ.get("GOOGLE_CREDS_PATH", "credentials.json")
+creds_path=json.loads(os.environ["GOOGLE_CREDS_PATH"])
+creds = Credentials.from_json_keyfile_name(creds_path, SCOPE)
 client = gspread.authorize(creds)
 SHEET_NAME = client.open("Leave Application (Responses)")
 
@@ -542,6 +544,7 @@ def admin_dashboard():
 #    app.run(debug=True)
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)
+
 
 
 
