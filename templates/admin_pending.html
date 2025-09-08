@@ -1,0 +1,35 @@
+{% extends "admin_base.html" %}
+{% block content %}
+<h3>⏳ Pending Leave Requests</h3>
+
+<table>
+<tr>
+  <th>Name</th><th>Email</th><th>From</th><th>To</th><th>Session</th>
+  <th>Type</th><th>Reason</th><th>Action</th>
+</tr>
+{% for l in leaves %}
+<tr>
+  <td>{{ l["Name"] }}</td><td>{{ l["Email Address"] }}</td><td>{{ l["Leave From Date"] }}</td>
+  <td>{{ l["Leave To Date"] }}</td><td>{{ l["Half Day / Full Day"] }}</td><td>{{ l["Type of leave"] }}</td>
+  <td>{{ l["Reason for leave"] }}</td>
+  <!--<td>
+    <a href="/approve/{{ loop.index0 }}">✅ Approve</a> |
+    <a href="/reject/{{ loop.index0 }}">❌ Reject</a> |
+    <a href="/cancel/{{ loop.index0 }}">Cancel</a>
+  </td>
+-->
+  <td>
+  <form action="/decision/{{ l['row_number'] }}" method="post">
+    <input type="text" name="comment" placeholder="Optional comment" size="20">
+    <select name="decision">
+      <option value="Approved">Approve</option>
+      <option value="Rejected">Reject</option>
+      <option value="Cancelled">Cancel</option>
+    </select>
+    <button type="submit">Submit</button>
+  </form>
+  </td>
+</tr>
+{% endfor %}
+</table>
+{% endblock %}

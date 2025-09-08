@@ -1,0 +1,59 @@
+{% extends "admin_base.html" %}
+{% block content %}
+<h3>📄 Leave History</h3>
+
+<form method="get" class="filter">
+  Year:
+  <select name="year">
+    <option value="">--All--</option>
+    <option value="2023">{{ "selected" if request.args.get("year") == "2023" else "" }}2023</option>
+<option value="2024">{{ "selected" if request.args.get("year") == "2024" else "" }}2024</option>
+<option value="2025">{{ "selected" if request.args.get("year") == "2025" else "" }}2025</option>
+  </select>
+
+  Month:
+  <select name="month">
+    <option value="">--All--</option>
+    <option value="January">{{ "selected" if request.args.get("month") == "January" else "" }}January</option>
+<option value="February">{{ "selected" if request.args.get("month") == "February" else "" }}February</option>
+<option value="March">{{ "selected" if request.args.get("month") == "March" else "" }}March</option>
+<option value="April">{{ "selected" if request.args.get("month") == "April" else "" }}April</option>
+<option value="May">{{ "selected" if request.args.get("month") == "May" else "" }}May</option>
+<option value="June">{{ "selected" if request.args.get("month") == "June" else "" }}June</option>
+<option value="July">{{ "selected" if request.args.get("month") == "July" else "" }}July</option>
+<option value="August">{{ "selected" if request.args.get("month") == "August" else "" }}August</option>
+<option value="September">{{ "selected" if request.args.get("month") == "September" else "" }}September</option>
+<option value="October">{{ "selected" if request.args.get("month") == "October" else "" }}October</option>
+<option value="November">{{ "selected" if request.args.get("month") == "November" else "" }}November</option>
+<option value="December">{{ "selected" if request.args.get("month") == "December" else "" }}December</option>
+  </select>
+
+  Name: <input name="name" value="{{ request.args.get('name', '') }}" placeholder="Enter name">
+
+  Session:
+  <select name="session">
+    <option value="">--All--</option>
+    <option value="Full" {% if request.args.get('session') == 'Full' %}selected{% endif %}>Full</option>
+    <option value="AM" {% if request.args.get('session') == 'AM' %}selected{% endif %}>AM</option>
+    <option value="PM" {% if request.args.get('session') == 'PM' %}selected{% endif %}>PM</option>
+  </select>
+
+  <button type="submit">Filter</button>
+</form>
+
+<table border="1">
+<tr>
+  <th>Name</th><th>Email</th><th>From</th><th>To</th><th>Session</th>
+  <th>Type</th><th>Reason</th><th>Status</th><th>Month</th>
+</tr>
+{% for l in leaves %}
+<tr>
+  <td>{{ l["Name"] }}</td><td>{{ l["Email Address"] }}</td>
+  <td>{{ l["Leave From Date"] }}</td><td>{{ l["Leave To Date"] }}</td>
+  <td>{{ l["Half Day / Full Day"] }}</td><td>{{ l["Type of leave"] }}</td>
+  <td>{{ l["Reason for leave"] }}</td><td>{{ l["Apprved/Rejected"] }}</td>
+  <td>{{ l["month"] }}</td>
+</tr>
+{% endfor %}
+</table>
+{% endblock %}

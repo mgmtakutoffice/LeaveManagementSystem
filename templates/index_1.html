@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>My Leave Summary</title>
+  <style>
+    body { font-family: Arial, sans-serif; background:#f8f9fa; padding:20px; }
+    .header { background:#1e1e39; color:#fff; padding:12px; text-align:center; font-size:20px; font-weight:bold; margin-bottom:20px; }
+    .top-bar { display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; }
+    .logout { color:#dc3545; text-decoration:none; font-weight:bold; }
+    .logout:hover { text-decoration:underline; }
+    .card { background:#fff; padding:16px; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,.1); max-width:400px; margin:0 auto; }
+    table { width:100%; border-collapse:collapse; }
+    th, td { border:1px solid #ddd; padding:6px 10px; font-size:14px; }
+    th { background:#343a40; color:#fff; text-align:left; }
+    td.right { text-align:right; }
+    h3 { margin:0 0 12px 0; font-size:16px; color:#007bff; }
+  </style>
+</head>
+<body>
+
+  <div class="header">Anand Akut & Associates</div>
+
+  <div class="top-bar">
+    <h2 style="margin:0; font-size:18px;">Welcome {{ current_user.name }}</h2>
+    <a href="{{ url_for('logout') }}" class="logout">Logout</a>
+  </div>
+
+  <div class="card">
+    <h3>📊 Month-wise Leave Summary</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Month</th>
+          <th class="right">Days</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% if monthly_days %}
+          {% set grand_total = 0 %}
+          {% for mk, days in monthly_days.items() %}
+            <tr>
+              <td>{{ mk }}</td>
+              <td class="right">{{ '%.1f' % days }}</td>
+            </tr>
+            {% set grand_total = grand_total + days %}
+          {% endfor %}
+          <tr>
+            <th>Total</th>
+            <th class="right">{{ '%.1f' % grand_total }}</th>
+          </tr>
+        {% else %}
+          <tr>
+            <td colspan="2" style="text-align:center; color:#666;">No leave days</td>
+          </tr>
+        {% endif %}
+      </tbody>
+    </table>
+  </div>
+
+</body>
+</html>

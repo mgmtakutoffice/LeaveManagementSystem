@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Employee Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f9fa;
+            padding: 20px;
+        }
+        /* Header */
+        .header {
+            background-color: #1e1e39; /* navy blue */
+            color: white;
+            padding: 15px;
+            text-align: center;
+            font-size: 22px;
+            font-weight: bold;
+        }
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .logout {
+            text-decoration: none;
+            color: #dc3545;
+            font-weight: bold;
+        }
+        .logout:hover {
+            text-decoration: underline;
+        }
+        .btn {
+            display: inline-block;
+            padding: 10px 16px;
+            font-size: 14px;
+            border-radius: 4px;
+            text-decoration: none;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        .btn:hover {
+            background-color: #0056b3;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        table, th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+        }
+        th {
+            background-color: #343a40;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header -->
+    <div class="header">
+        Anand Akut & Associates
+    </div>
+
+    <!-- Top Bar -->
+    <div class="top-bar">
+        <h2>Welcome {{ current_user.name }}</h2>
+        <a href="{{ url_for('logout') }}" class="logout">Logout</a>
+    </div>
+
+    <!-- Apply Leave Button -->
+    <a href="{{ url_for('apply_leave') }}" class="btn">✍️ Apply Leave</a>
+<!--###########-->
+
+{% if total_rows is defined %}
+    <div style="margin:8px 0; font-size:13px; color:#555;">
+        Rows (mine): {{ total_rows }} |
+        Approved kept: {{ approved_rows }} |
+        Parsed ok: {{ parsed_rows }} |
+        Skipped: {{ skipped_rows }}
+    </div>
+{% endif %}
+
+    <!--<div class="card">
+        <h3 class="section-title">Month-wise Total Leave Days</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Month</th>
+                    <th style="text-align:right;">Total Days</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if monthly_days %}
+                    {% set grand_total = 0 %}
+                    {% for mk, days in monthly_days.items() %}
+                    <tr>
+                        <td>{{ mk }}</td>
+                        <td style="text-align:right;">{{ '%.1f' % days }}</td>
+                    </tr>
+                    {% set grand_total = grand_total + days %}
+                {% endfor %}
+                <tr>
+                    <th>Total</th>
+                    <th style="text-align:right;">{{ '%.1f' % grand_total }}</th>
+                </tr>
+            {% else %}
+                <tr><td colspan="2">No leave days to summarize.</td></tr>
+            {% endif %}
+            </tbody>
+        </table>
+    </div>-->
+
+
+    <!-- Leave Records -->
+    <h3 class="mt-4">My Leave Requests</h3>
+    <table>
+        <tr>
+            <th>From</th>
+            <th>To</th>
+            <th>Session</th>
+            <th>Type</th>
+            <th>Reason</th>
+            <th>Status</th>
+            <th>Comment</th>
+        </tr>
+        {% for l in leaves %}
+        <tr>
+            <td>{{ l["Leave From Date"] }}</td>
+            <td>{{ l["Leave To Date"] }}</td>
+            <td>{{ l["Half Day / Full Day"] }}</td>
+            <td>{{ l["Type of leave"] }}</td>
+            <td>{{ l["Reason for leave"] }}</td>
+            <td>{{ l["Apprved/Rejected"] }}</td>
+            <td>{{ l["comment"] }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+
+</body>
+</html>
