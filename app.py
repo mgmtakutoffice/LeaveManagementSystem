@@ -12,7 +12,6 @@ from collections import defaultdict, OrderedDict
 from datetime import datetime, timedelta
 from flask import render_template
 
-
 app = Flask(__name__)
 app.secret_key = "your-secret-key"
 
@@ -21,8 +20,10 @@ login_manager.init_app(app)
 login_manager.login_view = "login"
 
 SCOPE = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-CREDS_FILE = r"D:\Kalyani\Office\Development\LeaveSystem\credentials.json"
-SHEET_NAME = "Leave Application (Responses)"
+creds_path = os.environ.get("GOOGLE_CREDS_PATH", "credentials.json")
+creds = ServiceAccountCredentials.from_json_keyfile_name(creds_path, scope)
+client = gspread.authorize(creds)
+SHEET_NAME = client.open("Leave Application (Responses)")
 
 # Columns in Form Responses 1 (keep the exact header text as in the sheet)
 COLUMNS = [
@@ -541,4 +542,5 @@ def admin_dashboard():
 #    app.run(debug=True)
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)
+
 
