@@ -10,8 +10,6 @@ google-auth==2.34.0
 google-auth-oauthlib==1.2.1
 google-auth-httplib2==0.2.0
 
-# Email support
-smtplib ; python_version >= "3.0"  # comes with Python stdlib (not needed in requirements.txt normally)
-
 # Utilities
+
 python-dotenv==1.0.1   # if you plan to load env vars from .env
