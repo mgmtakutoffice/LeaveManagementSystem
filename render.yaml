@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: holiday-calendar
+    env: python
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: python3 app.py
+    plan: free
+    envVars:
+      - key: GOOGLE_CREDS_PATH
+        value: /etc/secrets/credentials.json
