@@ -17,9 +17,6 @@ from datetime import datetime, timedelta
 from flask import render_template
 
 import os, json   # make sure json is imported
-import gspread
-from google.oauth2.service_account import Credentials
-from flask import Flask
 
 app = Flask(__name__)
 app.secret_key = os.getenv("SECRET_KEY", "your-secret-key")
@@ -116,10 +113,11 @@ def get_user_row_by_email(email):
             return r
     return None
 
-def get_sheet():
-    creds = Credentials.from_json_keyfile_name(CREDS_FILE, SCOPE)
-    client = gspread.authorize(creds)
-    return client.open(SHEET_NAME).worksheet("Form Responses 1")
+#def get_sheet():
+
+#    creds = Credentials.from_json_keyfile_name(CREDS_FILE, SCOPE)
+#    client = gspread.authorize(creds)
+#    return client.open(SHEET_NAME).worksheet("Form Responses 1")
 
 def to_date(s: str):
     return datetime.strptime(s, "%m/%d/%Y").date()
@@ -591,6 +589,7 @@ def admin_dashboard():
 #    app.run(debug=True)
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)
+
 
 
 
