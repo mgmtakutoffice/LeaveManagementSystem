@@ -24,6 +24,10 @@ from flask import Flask
 app = Flask(__name__)
 app.secret_key = os.getenv("SECRET_KEY", "your-secret-key")
 
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = "login"   # route name for your login page
+
 # Google Sheets scopes
 SCOPES = [
     "https://www.googleapis.com/auth/spreadsheets",
@@ -587,6 +591,7 @@ def admin_dashboard():
 #    app.run(debug=True)
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)
+
 
 
 
