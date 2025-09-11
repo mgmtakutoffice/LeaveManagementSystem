@@ -77,6 +77,9 @@
     <a href="{{ url_for('apply_leave') }}" class="btn">✍️ Apply Leave</a>
 <!--###########-->
 
+     <!-- Calendar page -->
+    <a href="{{ url_for('calendar_page') }}" class="btn">📄 Holiday and Leave Calendar</a>
+
 {% if total_rows is defined %}
     <div style="margin:8px 0; font-size:13px; color:#555;">
         Rows (mine): {{ total_rows }} |
@@ -144,3 +147,4 @@
 
 </body>
 </html>
+
