@@ -10,6 +10,7 @@ from google.oauth2.service_account import Credentials
 from calendar import month_name
 import os
 import smtplib
+import time
 from email.mime.text import MIMEText
 from email.utils import formataddr    
 from collections import defaultdict, OrderedDict
@@ -35,6 +36,7 @@ SCOPES = [
 SHEET_ID = os.environ.get("SHEET_ID")                     # spreadsheet ID (not name)
 USERS_SHEET_NAME = os.environ.get("USERS_SHEET_NAME", "Users")
 FORM_WS_NAME = os.environ.get("FORM_WS_NAME", "Form Responses 1")
+HOLIDAY_WS_NAME = os.environ.get("HOLIDAY_WS_NAME", "Holidays")
 
 def get_gspread_client():
     """
@@ -65,7 +67,9 @@ def get_sheet():
     sh = get_spreadsheet()
     return sh.worksheet(FORM_WS_NAME)
 
-
+def get_holiday_sheet():
+     sh = get_spreadsheet()
+    return sh.worksheet(HOLIDAY_WS_NAME)
 
 
 
@@ -80,30 +84,6 @@ COLUMNS = [
 
 TS_FORMAT = "%m/%d/%Y %H:%M:%S"  # unify timestamp format app-wide
 
-
-# --- Email settings ---
-#EMAIL_HOST = os.getenv("EMAIL_HOST", "smtp.gmail.com")
-#EMAIL_PORT = int(os.getenv("EMAIL_PORT", "465"))  # 465=SSL, 587=STARTTLS
-#EMAIL_USER = os.getenv("mgmt.akutoffice@gmail.com")              # e.g. youraddress@gmail.com
-#EMAIL_PASS = os.getenv("EMAIL_PASS")              # App Password if Gmail with 2FA
-
-#FROM_NAME  = os.getenv("FROM_NAME", "Leave Bot")
-
-EMAIL_HOST = "smtp.gmail.com"
-EMAIL_PORT = 465  # 465 for SSL, 587 for STARTTLS
-EMAIL_USER = "mgmt.akutoffice@gmail.com"        # replace with your sender email
-EMAIL_PASS = "yqgb fgik xtzb cqbh"
-FROM_NAME  = "Leave Management System"
-# Comma-separated extra recipients (optional): "boss@firm.com, hr@firm.com"
-NOTIFY_EMAILS = [e.strip() for e in os.getenv("NOTIFY_EMAILS", "").split(",") if e.strip()]
-
-
-#def get_users_sheet():
-#    client = gspread.authorize(
-#        ServiceAccountCredentials.from_json_keyfile_name(CREDS_FILE, SCOPE)
-#    )
-#    return client.open(SHEET_NAME).worksheet("Users")
-
 def get_user_row_by_email(email):
     ws = get_users_sheet()
     records = ws.get_all_records()
@@ -113,11 +93,8 @@ def get_user_row_by_email(email):
             return r
     return None
 
-#def get_sheet():
 
-#    creds = Credentials.from_json_keyfile_name(CREDS_FILE, SCOPE)
-#    client = gspread.authorize(creds)
-#    return client.open(SHEET_NAME).worksheet("Form Responses 1")
+
 
 def to_date(s: str):
     return datetime.strptime(s, "%m/%d/%Y").date()
@@ -585,10 +562,94 @@ def admin_dashboard():
     # keep admins landing on Pending Approvals
     return redirect(url_for("admin_pending"))
 
+    
+#Calendar
+
+# Tiny cache to reduce API calls (10 min)
+_CACHE_TTL = 600
+_cache = {"t": 0, "events": []}
+
+def _fetch_events():
+    sh = get_sheet()
+    leave_ws = sh.get_all_records()
+
+    sh = get_holiday_sheet()
+    holiday_ws = sh.get_all_records()
+
+    events = []
+
+    # ---- Leaves (based on your working script’s logic) ----
+    for row in leave_ws:
+        status = row.get("Apprved/Rejected", "").strip().lower()
+        if status in ["rejected", "cancelled"]:
+            continue
+        
+
+        full_name = row.get("Name", "").strip()
+       #name = row.get("Name", "").split(" ")[1]
+        name_parts = full_name.strip().split()
+
+        # Get all words except the last
+        name = " ".join(name_parts[:-1]) if len(name_parts) > 1 else full_name
+        start_str = row.get("Leave From Date")
+        end_str = row.get("Leave To Date")
+        leave_type = row.get("Half Day / Full Day", "Full Day")
+
+        try:
+            start_date = datetime.strptime(start_str, "%m/%d/%Y").date()
+            end_date = datetime.strptime(end_str, "%m/%d/%Y").date()
+
+        except:
+            continue
+
+        delta = (end_date - start_date).days + 1
+        for i in range(delta):
+            leave_date = start_date + timedelta(days=i)
+            events.append({
+                "title": f"{name} ({leave_type})",
+                "start": leave_date.isoformat()
+            })
+
+    # ---- Holidays ----
+    for row in holiday_ws:
+        holiday_name = row.get("Occasion", "").strip()
+        date_str = row.get("Date", "").strip()
+
+        try:
+            holiday_date = datetime.strptime(date_str, "%d-%b-%Y").date()
+        except:
+            continue
+
+        events.append({
+            "title": f"{holiday_name}\n(Holiday)",
+            "start": holiday_date.isoformat(),
+            "allDay": True,
+            "color": "#FF9999"  # Light red color for holidays
+        })
+
+    return events
+
+def _get_cached_events():
+    now = time.time()
+    if now - _cache["t"] > _CACHE_TTL:
+        _cache["events"] = _fetch_events()
+        _cache["t"] = now
+    return _cache["events"]
+
+@app.route("/calendar")
+def calendar_page():
+    return render_template("calendar.html")
+
+@app.route("/api/leaves")
+def leaves_feed():
+    return jsonify(_get_cached_events())
+
+    
 #if __name__ == "__main__":
 #    app.run(debug=True)
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)
+
 
 
 
