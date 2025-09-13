@@ -31,6 +31,14 @@ SCOPES = [
     "https://www.googleapis.com/auth/drive",  # keep if you open by name or need Drive ops
 ]
 
+EMAIL_HOST = "smtp.gmail.com"
+EMAIL_PORT = 465  # 465 for SSL, 587 for STARTTLS
+EMAIL_USER = "mgmt.akutoffice@gmail.com"        # replace with your sender email
+EMAIL_PASS = "yqgb fgik xtzb cqbh"
+FROM_NAME  = "Leave Management System"
+# Comma-separated extra recipients (optional): "boss@firm.com, hr@firm.com"
+NOTIFY_EMAILS = [e.strip() for e in os.environ.get("NOTIFY_EMAILS", "").split(",") if e.strip()]
+
 # Env-driven config (set these in Render)
 SHEET_ID = os.environ.get("SHEET_ID")                     # spreadsheet ID (not name)
 USERS_SHEET_NAME = os.environ.get("USERS_SHEET_NAME", "Users")
@@ -648,6 +656,7 @@ def leaves_feed():
 #    app.run(debug=True)
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)
+
 
 
 
